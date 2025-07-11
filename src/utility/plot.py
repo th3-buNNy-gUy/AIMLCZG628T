@@ -67,7 +67,8 @@ def make_confusion_matrix(cf,
         group_counts = blanks
 
     if percent:
-        group_percentages = ["{0:.2%}".format(value) for value in cf.flatten()/np.sum(cf)]
+        div = np.array([np.sum(cf, axis=1) for _ in range(cf.shape[0])])
+        group_percentages = ["{0:.2%}".format(value/d) for value, d in zip(cf.flatten(), div.T.flatten())]
     else:
         group_percentages = blanks
 
