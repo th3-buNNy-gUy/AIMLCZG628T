@@ -285,6 +285,7 @@ def eda_page():
                                             x=dataframe_columns_numerical_scatter[0], 
                                             y=dataframe_columns_numerical_scatter[0], 
                                             color=selected_cat_col_scatter, 
+                                            symbol=selected_cat_col_scatter,
                                             title="Interactive Scatter Plot",
                                             height=1000,
                                             opacity=0.7,
@@ -295,6 +296,7 @@ def eda_page():
                                             x=dataframe_columns_numerical_scatter[0], 
                                             y=dataframe_columns_numerical_scatter[1], 
                                             color=selected_cat_col_scatter, 
+                                            symbol=selected_cat_col_scatter,
                                             title="Interactive Scatter Plot",
                                             height=1000,
                                             opacity=0.7,
@@ -335,19 +337,10 @@ def eda_page():
                                             y=dataframe_columns_numerical_scatter_3d[1], 
                                             z=dataframe_columns_numerical_scatter_3d[2], 
                                             color=selected_cat_col_scatter, 
+                                            symbol=selected_cat_col_scatter,
                                             title="Interactive Scatter Plot",
                                             height=1000,
                                             opacity=0.7,
-                        )
-                        fig.update_traces(
-                            marker=dict(
-                                # size=8,
-                                symbol="diamond-open",
-                                # line=dict(
-                                #     width=2,
-                                # )
-                            ),
-                            selector=dict(mode="markers"),
                         )
                         st.plotly_chart(fig)
                     else:
@@ -375,18 +368,24 @@ def eda_page():
                     if isinstance(st.session_state["dataframe_columns"]["anomaly"], str) and isinstance(st.session_state["dataframe_columns"]["description"], str):
                         dataframe_anomaly = dataframe.iloc[np.where(dataframe[st.session_state["dataframe_columns"]["anomaly"]]!=0)]
 
-                        fig = px.scatter(dataframe_anomaly, x=dataframe_anomaly.index, y=selected_num_col_scatter_ts, color=st.session_state["dataframe_columns"]["description"])
-
-                        fig.update_traces(
-                            marker=dict(
-                                # size=8,
-                                symbol="x-dot",
-                                # line=dict(
-                                #     width=2,
-                                # )
-                            ),
-                            selector=dict(mode="markers"),
+                        fig = px.scatter(
+                                            dataframe_anomaly, 
+                                            x=dataframe_anomaly.index, 
+                                            y=selected_num_col_scatter_ts, 
+                                            color=st.session_state["dataframe_columns"]["description"],
+                                            symbol=st.session_state["dataframe_columns"]["description"],
                         )
+
+                        # fig.update_traces(
+                        #     marker=dict(
+                        #         # size=8,
+                        #         symbol="x-dot",
+                        #         # line=dict(
+                        #         #     width=2,
+                        #         # )
+                        #     ),
+                        #     selector=dict(mode="markers"),
+                        # )
 
                         fig.add_trace(
                                         go.Scatter(
@@ -407,16 +406,16 @@ def eda_page():
                                                     line=dict(color='blue')
                     ))
 
-                # Update layout for better visualization
-                fig.update_layout(
-                    title=f'Time Series of {selected_num_col_scatter_ts}' + 'with Anomalies' if selected_cat_col_scatter_ts else '',
-                    xaxis_title="Date Time",
-                    yaxis_title=selected_num_col_scatter_ts,
-                    hovermode="x unified", # Shows hover info across all traces at a given x-value
-                    # legend_title="Legend",
-                    # height=500,
-                    xaxis_rangeslider_visible=True # Add a range slider for easy navigation
-                )
+                # # Update layout for better visualization
+                # fig.update_layout(
+                #     title=f'Time Series of {selected_num_col_scatter_ts}' + 'with Anomalies' if selected_cat_col_scatter_ts else '',
+                #     xaxis_title="Date Time",
+                #     yaxis_title=selected_num_col_scatter_ts,
+                #     hovermode="x unified", # Shows hover info across all traces at a given x-value
+                #     # legend_title="Legend",
+                #     # height=500,
+                #     xaxis_rangeslider_visible=True # Add a range slider for easy navigation
+                # )
                 st.plotly_chart(fig, key=11)
 
     else:
