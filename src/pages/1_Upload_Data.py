@@ -50,7 +50,7 @@ def upload_page():
         
         try:
             with st.container():
-                st.subheader("Data Preview:")
+                st.subheader("Data Preview ::")
 
                 # Read the CSV file into a pandas DataFrame
                 # io.StringIO is used to treat the uploaded file (bytes) as a string for pandas
@@ -65,7 +65,7 @@ def upload_page():
 
 
             with st.container():
-                st.subheader("Basic Statistics:")
+                st.subheader("Basic Statistics ::")
 
                 # Display descriptive statistics of the numerical columns
                 st.write(dataframe.describe())
@@ -74,7 +74,7 @@ def upload_page():
 
 
             with st.container():
-                st.subheader("Data Dimensions:")
+                st.subheader("Data Information ::")
 
                 # Display information about columns, including data types and non-null values
                 # Using st.write(dataframe.info()) directly doesn't work well for display;
