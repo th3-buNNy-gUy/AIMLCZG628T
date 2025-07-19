@@ -339,6 +339,16 @@ def eda_page():
                                             height=1000,
                                             opacity=0.7,
                         )
+                        fig.update_traces(
+                            marker=dict(
+                                # size=8,
+                                symbol="diamond-open",
+                                # line=dict(
+                                #     width=2,
+                                # )
+                            ),
+                            selector=dict(mode="markers"),
+                        )
                         st.plotly_chart(fig)
                     else:
                         st.warning("Need to select 3 numerical columns.")
@@ -355,16 +365,6 @@ def eda_page():
                                                             key=8
                 )
 
-                fig = go.Figure()
-                fig.add_trace(
-                                go.Scatter(
-                                                y=dataframe[selected_num_col_scatter_ts],
-                                                x=dataframe.index,
-                                                mode='lines',
-                                                name=selected_num_col_scatter_ts,
-                                                # line=dict(color='blue')
-                ))
-
                 selected_cat_col_scatter_ts = st.selectbox(
                                                             "Select a categorical column for scatter:", 
                                                             [None, st.session_state["dataframe_columns"]["description"]], 
@@ -372,14 +372,52 @@ def eda_page():
                 )
 
                 if selected_cat_col_scatter_ts:
+                    if isinstance(st.session_state["dataframe_columns"]["anomaly"], str) and isinstance(st.session_state["dataframe_columns"]["description"], str):
+                        dataframe_anomaly = dataframe.iloc[np.where(dataframe[st.session_state["dataframe_columns"]["anomaly"]]!=0)]
+
+                        fig = px.scatter(dataframe_anomaly, x=dataframe_anomaly.index, y=selected_num_col_scatter_ts, color=st.session_state["dataframe_columns"]["description"])
+
+                        fig.update_traces(
+                            marker=dict(
+                                # size=8,
+                                symbol="x-dot",
+                                # line=dict(
+                                #     width=2,
+                                # )
+                            ),
+                            selector=dict(mode="markers"),
+                        )
+
+                        fig.add_trace(
+                                        go.Scatter(
+                                                        y=dataframe[selected_num_col_scatter_ts],
+                                                        x=dataframe.index,
+                                                        # mode='lines',
+                                                        name=selected_num_col_scatter_ts,
+                                                        line=dict(color='blue')
+                        ))
+                else:
+                    fig = go.Figure()
                     fig.add_trace(
                                     go.Scatter(
-                                                    y=dataframe[selected_cat_col_scatter_ts],
+                                                    y=dataframe[selected_num_col_scatter_ts],
                                                     x=dataframe.index,
-                                                    mode='markers',
-                                                    color=selected_cat_col_scatter_ts, 
+                                                    # mode='lines',
+                                                    name=selected_num_col_scatter_ts,
+                                                    line=dict(color='blue')
                     ))
-                st.plotly_chart(fig)
+
+                # Update layout for better visualization
+                fig.update_layout(
+                    title=f'Time Series of {selected_num_col_scatter_ts}' + 'with Anomalies' if selected_cat_col_scatter_ts else '',
+                    xaxis_title="Date Time",
+                    yaxis_title=selected_num_col_scatter_ts,
+                    hovermode="x unified", # Shows hover info across all traces at a given x-value
+                    # legend_title="Legend",
+                    # height=500,
+                    xaxis_rangeslider_visible=True # Add a range slider for easy navigation
+                )
+                st.plotly_chart(fig, key=11)
 
     else:
         st.warning("No data uploaded yet! Please go back to the 'Upload Data' page to upload a CSV file.")
