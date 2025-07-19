@@ -4,6 +4,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 
+from models.statistical import z_score_method, multivariate_gaussian_model
+from models.statistical import interquartile_range_method, percentile_method
+from models.statistical import k_nearest_neighbors, local_outlier_factor
 from models.supervised import test_model
 from models.supervised import logistic_regression, support_vector_machine_classifier, extreme_gradient_boosting_classifier, random_forest_classifier
 from models.unsupervised import test_unsupervised_model
@@ -102,6 +105,264 @@ def modelling_page():
                                         "Machine Learning", 
                                         # "Deep Learning", 
         ])
+
+        with tab1:
+            with st.container():
+                choice = st.radio(label='Choose Type of Model ::', 
+                                  options=["Parametric Methods", "Non-Parametric Methods", "Proximity-Based Methods"], 
+                                  horizontal=True)
+                
+                if choice == "Parametric Methods":
+                    model_techniques = {
+                                        "Z-Score Method":z_score_method,
+                                        "Multivariate Gaussian Model":multivariate_gaussian_model,
+                    }
+
+                    selected_pm_method = st.selectbox(
+                                                        "Select a modelling technique ::", 
+                                                        model_techniques.keys(), 
+                                                        key=18
+                    )
+
+                    if selected_pm_method == "Z-Score Method":
+
+                        selected_threshold = st.slider(
+                            "Z-score Threshold for Anomaly Detection:",
+                            min_value=1.0, max_value=5.0, value=3.0, step=0.1,
+                            help="Points with a Z-score (standard deviations from mean) above this threshold will be marked as anomalies."
+                        )
+
+                        selected_set = st.selectbox(
+                                                        "Select evaluation dataset ::", 
+                                                        ["Test", "Validation", "Train"], 
+                                                        key=21
+                        )
+
+                        dataframe_eval = st.session_state["dataframe_test"]
+                        if selected_set == "Validation": dataframe_eval = st.session_state["dataframe_val"]
+                        elif selected_set == "Train": dataframe_eval = st.session_state["dataframe_train"]
+
+                        predictions, labels = model_techniques[selected_pm_method](
+                                                                                st.session_state["dataframe_train"],
+                                                                                st.session_state["dataframe_columns"]["anomaly"],
+                                                                                st.session_state["dataframe_columns"]["description"],
+                                                                                selected_threshold,
+                                                                                dataframe_eval,
+                        )
+                        
+                        cf = CommonUtility.confusion_matrix(labels, predictions)
+                        cff = cf / np.sum(cf, axis=1, keepdims=True)
+                        plot_binary_confusion_matrices(cff, set=selected_set)
+                        display_evaluation_matrices(cff, set=selected_set)
+
+                        st.markdown("---")
+
+                    if selected_pm_method == "Multivariate Gaussian Model":
+                        selected_contamination = st.slider(
+                            "Set Contamination:",
+                            min_value=0.01, max_value=1.00, value=0.3, step=0.01,
+                            # help="Points with a Z-score (standard deviations from mean) above this threshold will be marked as anomalies."
+                        )
+                        robust_covariance = st.checkbox("Robust Covariance", value=False)
+
+                        selected_set = st.selectbox(
+                                                        "Select evaluation dataset ::", 
+                                                        ["Test", "Validation", "Train"], 
+                                                        key=21
+                        )
+
+                        dataframe_eval = st.session_state["dataframe_test"]
+                        if selected_set == "Validation": dataframe_eval = st.session_state["dataframe_val"]
+                        elif selected_set == "Train": dataframe_eval = st.session_state["dataframe_train"]
+
+                        predictions, labels = model_techniques[selected_pm_method](
+                                                                                st.session_state["dataframe_train"],
+                                                                                st.session_state["dataframe_columns"]["anomaly"],
+                                                                                st.session_state["dataframe_columns"]["description"],
+                                                                                selected_contamination,
+                                                                                robust_covariance,
+                                                                                dataframe_eval,
+                        )
+                        
+                        cf = CommonUtility.confusion_matrix(labels, predictions)
+                        cff = cf / np.sum(cf, axis=1, keepdims=True)
+                        plot_binary_confusion_matrices(cff, set=selected_set)
+                        display_evaluation_matrices(cff, set=selected_set)
+
+                        st.markdown("---")
+                
+                if choice == "Non-Parametric Methods":
+                    model_techniques = {
+                                        "Interquartile Range (IQR) Method":interquartile_range_method,
+                                        "Percentile Method":percentile_method,
+                    }
+
+                    selected_npm_method = st.selectbox(
+                                                        "Select a modelling technique ::", 
+                                                        model_techniques.keys(), 
+                                                        key=19
+                    )
+
+                    if selected_npm_method == "Interquartile Range (IQR) Method":
+                        selected_iqr_multiplier = st.slider(
+                            "Set IQR Multiplier:",
+                            min_value=0.5, max_value=3.00, value=1.5, step=0.1,
+                            # help="Points with a Z-score (standard deviations from mean) above this threshold will be marked as anomalies."
+                        )
+
+                        selected_set = st.selectbox(
+                                                        "Select evaluation dataset ::", 
+                                                        ["Test", "Validation", "Train"], 
+                                                        key=21
+                        )
+
+                        dataframe_eval = st.session_state["dataframe_test"]
+                        if selected_set == "Validation": dataframe_eval = st.session_state["dataframe_val"]
+                        elif selected_set == "Train": dataframe_eval = st.session_state["dataframe_train"]
+
+                        predictions, labels = model_techniques[selected_npm_method](
+                                                                                st.session_state["dataframe_train"],
+                                                                                st.session_state["dataframe_columns"]["anomaly"],
+                                                                                st.session_state["dataframe_columns"]["description"],
+                                                                                selected_iqr_multiplier,
+                                                                                dataframe_eval,
+                        )
+                        
+                        cf = CommonUtility.confusion_matrix(labels, predictions)
+                        cff = cf / np.sum(cf, axis=1, keepdims=True)
+                        plot_binary_confusion_matrices(cff, set=selected_set)
+                        display_evaluation_matrices(cff, set=selected_set)
+
+                        st.markdown("---")
+
+                    if selected_npm_method == "Percentile Method":
+                        selected_percentile_range = st.slider(
+                            "Select a percentile range", 
+                            0.0, 100.0, (1.0, 99.0)
+                        )
+
+                        selected_set = st.selectbox(
+                                                        "Select evaluation dataset ::", 
+                                                        ["Test", "Validation", "Train"], 
+                                                        key=21
+                        )
+
+                        dataframe_eval = st.session_state["dataframe_test"]
+                        if selected_set == "Validation": dataframe_eval = st.session_state["dataframe_val"]
+                        elif selected_set == "Train": dataframe_eval = st.session_state["dataframe_train"]
+
+                        predictions, labels = model_techniques[selected_npm_method](
+                                                                                st.session_state["dataframe_train"],
+                                                                                st.session_state["dataframe_columns"]["anomaly"],
+                                                                                st.session_state["dataframe_columns"]["description"],
+                                                                                selected_percentile_range[0],
+                                                                                selected_percentile_range[1],
+                                                                                dataframe_eval,
+                        )
+                        
+                        cf = CommonUtility.confusion_matrix(labels, predictions)
+                        cff = cf / np.sum(cf, axis=1, keepdims=True)
+                        plot_binary_confusion_matrices(cff, set=selected_set)
+                        display_evaluation_matrices(cff, set=selected_set)
+
+                        st.markdown("---")
+                
+                if choice == "Proximity-Based Methods":
+                    model_techniques = {
+                                        "k-Nearest Neighbors":k_nearest_neighbors,
+                                        "Local Outlier Factor":local_outlier_factor,
+                    }
+
+                    selected_pb_method = st.selectbox(
+                                                        "Select a modelling technique ::", 
+                                                        model_techniques.keys(), 
+                                                        key=20
+                    )
+
+                    if selected_pb_method == "k-Nearest Neighbors":
+                        selected_n_neighbors = st.slider(
+                            "N-Neighbors for kNN:",
+                            min_value=1, max_value=100, value=10, step=1,
+                            # help="Points with a Z-score (standard deviations from mean) above this threshold will be marked as anomalies."
+                        )
+
+                        selected_contamination = st.slider(
+                            "Set Contamination:",
+                            min_value=0.01, max_value=1.00, value=0.3, step=0.01,
+                            # help="Points with a Z-score (standard deviations from mean) above this threshold will be marked as anomalies."
+                        )
+
+                        selected_metric = st.selectbox(
+                                                        "Select distance metric ::", 
+                                                        ['euclidean', 'manhattan', 'minkowski'], 
+                                                        key=22
+                        )
+
+                        selected_set = st.selectbox(
+                                                        "Select evaluation dataset ::", 
+                                                        ["Test", "Validation", "Train"], 
+                                                        key=21
+                        )
+
+                        dataframe_eval = st.session_state["dataframe_test"]
+                        if selected_set == "Validation": dataframe_eval = st.session_state["dataframe_val"]
+                        elif selected_set == "Train": dataframe_eval = st.session_state["dataframe_train"]
+
+                        predictions, labels = model_techniques[selected_pb_method](
+                                                                                st.session_state["dataframe_train"],
+                                                                                st.session_state["dataframe_columns"]["anomaly"],
+                                                                                st.session_state["dataframe_columns"]["description"],
+                                                                                selected_n_neighbors,
+                                                                                selected_contamination,
+                                                                                selected_metric,
+                                                                                dataframe_eval,
+                        )
+                        
+                        cf = CommonUtility.confusion_matrix(labels, predictions)
+                        cff = cf / np.sum(cf, axis=1, keepdims=True)
+                        plot_binary_confusion_matrices(cff, set=selected_set)
+                        display_evaluation_matrices(cff, set=selected_set)
+
+                        st.markdown("---")
+
+                    if selected_pb_method == "Local Outlier Factor":
+                        selected_n_neighbors = st.slider(
+                            "N-Neighbors for kNN:",
+                            min_value=1, max_value=100, value=10, step=1,
+                            # help="Points with a Z-score (standard deviations from mean) above this threshold will be marked as anomalies."
+                        )
+
+                        selected_contamination = st.slider(
+                            "Set Contamination:",
+                            min_value=0.01, max_value=1.00, value=0.3, step=0.01,
+                            # help="Points with a Z-score (standard deviations from mean) above this threshold will be marked as anomalies."
+                        )
+
+                        selected_set = st.selectbox(
+                                                        "Select evaluation dataset ::", 
+                                                        ["Test", "Validation", "Train"], 
+                                                        key=21
+                        )
+
+                        dataframe_eval = st.session_state["dataframe_test"]
+                        if selected_set == "Validation": dataframe_eval = st.session_state["dataframe_val"]
+                        elif selected_set == "Train": dataframe_eval = st.session_state["dataframe_train"]
+
+                        predictions, labels = model_techniques[selected_pb_method](
+                                                                                st.session_state["dataframe_train"],
+                                                                                st.session_state["dataframe_columns"]["anomaly"],
+                                                                                st.session_state["dataframe_columns"]["description"],
+                                                                                selected_n_neighbors,
+                                                                                selected_contamination,
+                                                                                dataframe_eval,
+                        )
+                        
+                        cf = CommonUtility.confusion_matrix(labels, predictions)
+                        cff = cf / np.sum(cf, axis=1, keepdims=True)
+                        plot_binary_confusion_matrices(cff, set=selected_set)
+                        display_evaluation_matrices(cff, set=selected_set)
+
+                        st.markdown("---")
 
         with tab2:
             with st.container():
@@ -249,7 +510,7 @@ def modelling_page():
                         st.markdown("#### Model Parameters ::")
                         selected_contamination = st.slider(
                             "Set Contamination:",
-                            min_value=0.01, max_value=1.00, value=0.3, step=0.01,
+                            min_value=0.01, max_value=1.00, value=0.3, step=0.01, key=23
                             # help="Points with a Z-score (standard deviations from mean) above this threshold will be marked as anomalies."
                         )
 
@@ -319,6 +580,8 @@ def modelling_page():
                     cff = cf / np.sum(cf, axis=1, keepdims=True)
                     plot_binary_confusion_matrices(cff, set=selected_set)
                     display_evaluation_matrices(cff, set=selected_set)
+
+                st.markdown("---")
 
     else:
         st.warning("No data uploaded yet! Please go back to the 'Upload Data' page to upload a CSV file.")
