@@ -7,6 +7,25 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
+def plot_dimensional_reduction(df, title="Dimensional Reduction", dpi=100):
+    plt.figure(figsize=(20, 6), dpi=dpi)
+    scatter = sns.scatterplot(
+                        data=df, 
+                        x=df.columns[0],
+                        y=df.columns[1],
+                        hue="description", style="description", 
+                        edgecolor="black", zorder=5, alpha=0.7,
+                        palette="deep", s=100, legend="full"
+    )
+    sns.move_legend(
+                        scatter, "lower center",
+                        bbox_to_anchor=(.5, 1.1),
+                        ncol=5, title="Description", frameon=True,
+    )
+    plt.grid(True)
+    plt.title(title, fontsize=20)
+    plt.show()
+
 def make_confusion_matrix(cf,
                           group_names=None,
                           categories='auto',
@@ -107,7 +126,12 @@ def make_confusion_matrix(cf,
 
     # MAKE THE HEATMAP VISUALIZATION
     plt.figure(figsize=figsize)
-    sns.heatmap(cf,annot=box_labels,fmt="",cmap=cmap,cbar=cbar,xticklabels=categories,yticklabels=categories)
+    sns.heatmap(cf,
+                    annot=box_labels,
+                    fmt="",
+                    # cmap=cmap,
+                    cbar=cbar,
+                    xticklabels=categories,yticklabels=categories)
 
     if xyplotlabels:
         plt.ylabel('True label')
