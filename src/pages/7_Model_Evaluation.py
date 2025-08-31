@@ -6,6 +6,8 @@ import numpy as np
 import pickle
 import io
 
+from sklearn.metrics import accuracy_score
+
 from utility.common_utility import CommonUtility
 from models.supervised import test_model
 
@@ -24,9 +26,6 @@ st.set_page_config(
 def load_models():
     if "saved_models" in st.session_state:
         return None
-    
-    import os
-    print("A"*1000, os.getcwd())
 
     with open('./src/models/saved/logistic_regression_og.pickle', 'rb') as handle:
         lr_model_data_og = pickle.load(handle)
@@ -116,7 +115,7 @@ def plot_binary_confusion_matrices(cf, set="Test"):
 def plot_confusion_matrices(labels, predictions, set="Test"):
     cf = CommonUtility.confusion_matrix(labels, predictions)
 
-    combined = zip(st.session_state["dataframe_train"][st.session_state["dataframe_columns"]["anomaly"]].values, st.session_state["dataframe_train"][st.session_state["dataframe_columns"]["description"]].values)
+    combined = zip(st.session_state["dataframe"][st.session_state["dataframe_columns"]["anomaly"]].values, st.session_state["dataframe"][st.session_state["dataframe_columns"]["description"]].values)
     sorted_pairs = sorted(combined, key=lambda pair: pair[0])
 
     anomaly_ids = dict()
@@ -163,34 +162,63 @@ def model_evaluation_page():
 
         st.dataframe(dataframe)
 
-        scaler = st.session_state["saved_models"]["XGBoost Classifier (SN-CWGAN-GP) (Dissertation)"]["scaler"]
-        values = scaler.transform(dataframe.drop(columns=["anomaly", "description"]).values)
-        dataframe_test_scaled = pd.DataFrame(values, columns=dataframe.drop(columns=["anomaly", "description"]).columns)
-        dataframe_test_scaled = dataframe_test_scaled.assign(anomaly=dataframe.anomaly.values, description=dataframe.description.values)
-        
-        st.dataframe(dataframe_test_scaled)
+        # model = st.session_state["saved_models"]["Logistic Regression (Dissertation)"]["model"]
+        # scaler = st.session_state["saved_models"]["Logistic Regression (Dissertation)"]["scaler"]
 
+        # values = scaler.transform(dataframe.drop(columns=["anomaly", "description"]).values)
+        # dataframe_test_scaled = pd.DataFrame(values, columns=dataframe.drop(columns=["anomaly", "description"]).columns)
+        # dataframe_test_scaled = dataframe_test_scaled.assign(anomaly=dataframe.anomaly.values, description=dataframe.description.values)
+        # st.dataframe(dataframe_test_scaled)
+
+        # X_test_scaled = dataframe.drop(columns=["anomaly", "description"]).values
+        # y_test = dataframe["anomaly"].values.ravel()
+
+        # y_pred = model.predict(X_test_scaled)
+        # accuracy = accuracy_score(y_test, y_pred)
+        # st.write(f"Accuracy: {accuracy:.4f}")
+
+        model_list = list(st.session_state["saved_models"].keys())
+        if "trained_models" in st.session_state:
+            model_list = model_list + list(st.session_state["trained_models"].keys())
+
+        print("A"*1000, model_list)
 
         selected_models = st.multiselect(
                                             "Please select the model(s) to evaluate ::",
-                                            st.session_state["saved_models"].keys(),
+                                            model_list,
                                             placeholder=None,
-                                            max_selections=1,
+                                            max_selections=2,
                                             key=701
         )
 
         for selected_model in selected_models:
             st.markdown(f"## Model :: {selected_model}")
-            model = st.session_state["saved_models"][selected_model]["model"]
-            scaler = st.session_state["saved_models"][selected_model]["scaler"]
 
-            predictions, labels = test_model(
-                                                        model, scaler, 
-                                                        dataframe,
-                                                        st.session_state["dataframe_columns"]["anomaly"],
-                                                        st.session_state["dataframe_columns"]["description"],
-            )
-            plot_confusion_matrices(labels, predictions, set="Test")
+            if selected_model in st.session_state["saved_models"]:
+                model = st.session_state["saved_models"][selected_model]["model"]
+                scaler = st.session_state["saved_models"][selected_model]["scaler"]
+
+                predictions, labels = test_model(
+                                                            model, scaler, 
+                                                            dataframe,
+                                                            st.session_state["dataframe_columns"]["anomaly"],
+                                                            st.session_state["dataframe_columns"]["description"],
+                                                            use_scaler=False
+                )
+                plot_confusion_matrices(labels, predictions, set="Test")
+
+            elif selected_model in st.session_state["trained_models"]:
+                model = st.session_state["trained_models"][selected_model]["model"]
+                scaler = st.session_state["trained_models"][selected_model]["scaler"]
+
+                predictions, labels = test_model(
+                                                            model, scaler, 
+                                                            dataframe,
+                                                            st.session_state["dataframe_columns"]["anomaly"],
+                                                            st.session_state["dataframe_columns"]["description"],
+                                                            use_scaler=False
+                )
+                plot_confusion_matrices(labels, predictions, set="Test")
 
     else:
         st.success("Please upload a dataset to evaluate.")

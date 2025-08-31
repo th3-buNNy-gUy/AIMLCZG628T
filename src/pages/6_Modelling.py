@@ -3,6 +3,9 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+import pickle
+
+from datetime import datetime
 
 from models.statistical import z_score_method, multivariate_gaussian_model
 from models.statistical import interquartile_range_method, percentile_method
@@ -85,6 +88,17 @@ def plot_confusion_matrices(labels, predictions, set="Test"):
     display_evaluation_matrices(cff)
 
     st.markdown("---")
+
+def save_model(model, scaler, filename="model"):
+    model_data = {
+                    'model': model,
+                    'scaler': scaler
+    }
+    with open(f'./src/models/trained/{filename}.pickle', 'wb') as handle:
+        pickle.dump(model_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    if not "trained_models" in  st.session_state: st.session_state["trained_models"] = dict()
+    st.session_state["trained_models"][filename] = model_data
 
 
 def modelling_page():
@@ -396,8 +410,25 @@ def modelling_page():
                                                                                         st.session_state["dataframe_columns"]["anomaly"],
                                                                                         st.session_state["dataframe_columns"]["description"],
                                                                                         selected_solver,
-                                                                                        selected_C
+                                                                                        selected_C,
+                                                                                        use_scaler=False
                         )
+
+                        now = datetime.now()
+                        filename = f"logistic_regression_{selected_solver}_{selected_C}_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
+                        is_save_download = st.button(
+                                                        "Save Model", 
+                                                        key=617, 
+                                                        help="Click to save the trained model as a pickle file and download it.",
+                                                        type="primary",
+                                                        on_click=save_model, args=(model, scaler, filename))
+                        if is_save_download:
+                            st.download_button(
+                                label="Download Model",
+                                data=pickle.dumps({'model': model, 'scaler': scaler}),
+                                file_name=f"{filename}.pickle",
+                                mime="application/octet-stream" # Optional: specify the MIME type
+                            )
 
                     elif selected_supervisied_method == "Support Vector Machine Classifer":
                         st.markdown("#### Model Parameters ::")
@@ -417,8 +448,25 @@ def modelling_page():
                                                                                         st.session_state["dataframe_columns"]["anomaly"],
                                                                                         st.session_state["dataframe_columns"]["description"],
                                                                                         selected_kernel,
-                                                                                        selected_C
+                                                                                        selected_C,
+                                                                                        use_scaler=False
                         )
+
+                        now = datetime.now()
+                        filename = f"svm_classifier_{selected_solver}_{selected_C}_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
+                        is_save_download = st.button(
+                                                        "Save Model", 
+                                                        key=617, 
+                                                        help="Click to save the trained model as a pickle file and download it.",
+                                                        type="primary",
+                                                        on_click=save_model, args=(model, scaler, filename))
+                        if is_save_download:
+                            st.download_button(
+                                label="Download Model",
+                                data=pickle.dumps({'model': model, 'scaler': scaler}),
+                                file_name=f"{filename}.pickle",
+                                mime="application/octet-stream" # Optional: specify the MIME type
+                            )
 
                     elif selected_supervisied_method == "Random Forest Classifier":
                         st.markdown("#### Model Parameters ::")
@@ -438,8 +486,25 @@ def modelling_page():
                                                                                         st.session_state["dataframe_columns"]["anomaly"],
                                                                                         st.session_state["dataframe_columns"]["description"],
                                                                                         selected_criterion,
-                                                                                        selected_n_estimator
+                                                                                        selected_n_estimator,
+                                                                                        use_scaler=False
                         )
+
+                        now = datetime.now()
+                        filename = f"rf_classifier_{selected_solver}_{selected_C}_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
+                        is_save_download = st.button(
+                                                        "Save Model", 
+                                                        key=617, 
+                                                        help="Click to save the trained model as a pickle file and download it.",
+                                                        type="primary",
+                                                        on_click=save_model, args=(model, scaler, filename))
+                        if is_save_download:
+                            st.download_button(
+                                label="Download Model",
+                                data=pickle.dumps({'model': model, 'scaler': scaler}),
+                                file_name=f"{filename}.pickle",
+                                mime="application/octet-stream" # Optional: specify the MIME type
+                            )
 
                     elif selected_supervisied_method == "Extreme Gradient Boosting Classifier":
                         st.markdown("#### Model Parameters ::")
@@ -458,8 +523,25 @@ def modelling_page():
                                                                                         st.session_state["dataframe_columns"]["anomaly"],
                                                                                         st.session_state["dataframe_columns"]["description"],
                                                                                         selected_lr,
-                                                                                        selected_n_estimator
+                                                                                        selected_n_estimator,
+                                                                                        use_scaler=False
                         )
+
+                        now = datetime.now()
+                        filename = f"xgb_classifier_{selected_solver}_{selected_C}_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
+                        is_save_download = st.button(
+                                                        "Save Model", 
+                                                        key=617, 
+                                                        help="Click to save the trained model as a pickle file and download it.",
+                                                        type="primary",
+                                                        on_click=save_model, args=(model, scaler, filename))
+                        if is_save_download:
+                            st.download_button(
+                                label="Download Model",
+                                data=pickle.dumps({'model': model, 'scaler': scaler}),
+                                file_name=f"{filename}.pickle",
+                                mime="application/octet-stream" # Optional: specify the MIME type
+                            )
 
                     selected_set = st.selectbox(
                                                     "Select evaluation dataset ::", 
@@ -473,6 +555,7 @@ def modelling_page():
                                                                     st.session_state["dataframe_train"],
                                                                     st.session_state["dataframe_columns"]["anomaly"],
                                                                     st.session_state["dataframe_columns"]["description"],
+                                                                    use_scaler=False
                         )
                     elif selected_set == "Validation":
                         predictions, labels = test_model(
@@ -480,6 +563,7 @@ def modelling_page():
                                                                     st.session_state["dataframe_val"],
                                                                     st.session_state["dataframe_columns"]["anomaly"],
                                                                     st.session_state["dataframe_columns"]["description"],
+                                                                    use_scaler=False
                         )
                     elif selected_set == "Test":
                         predictions, labels = test_model(
@@ -487,6 +571,7 @@ def modelling_page():
                                                                     st.session_state["dataframe_test"],
                                                                     st.session_state["dataframe_columns"]["anomaly"],
                                                                     st.session_state["dataframe_columns"]["description"],
+                                                                    use_scaler=False
                         )
                     plot_confusion_matrices(labels, predictions, set=selected_set)
 
