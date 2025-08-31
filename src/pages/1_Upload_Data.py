@@ -15,17 +15,6 @@ st.set_page_config(
     # }
 )
 
-
-with st.container():
-    cols = st.columns(5)
-
-    if cols[0].button("<< Home page", use_container_width=True, type="tertiary"):
-        st.switch_page("Home.py")
-        
-    if cols[-1].button("Exploratory Data Analysis page >>", use_container_width=True, type="tertiary"):
-        st.switch_page("pages/2_Exploratory_Data_Analysis.py")
-
-
 def upload_page():
     """
     Main function to run the Streamlit application.

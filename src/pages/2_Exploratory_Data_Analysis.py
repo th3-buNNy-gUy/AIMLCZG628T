@@ -17,16 +17,6 @@ st.set_page_config(
     # }
 )
 
-
-with st.container():
-    cols = st.columns(5)
-    
-    if cols[0].button("<< Upload Data page", use_container_width=True, type="tertiary"):
-        st.switch_page("pages/1_Upload_Data.py")
-        
-    # if cols[-1].button("Exploratory Data Analysis >>", use_container_width=True, type="tertiary"):
-    #     st.switch_page("pages/2_Exploratory_Data_Analysis.py")
-
 def eda_page():
     """
     Function to display the Exploratory Data Analysis page.
