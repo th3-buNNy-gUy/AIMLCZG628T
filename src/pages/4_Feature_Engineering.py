@@ -222,7 +222,6 @@ def fe_page():
 
     else:
         st.success("Please upload a dataset in the 'Upload Data' page.")
-        st.info("No dataset found in session state.")
 
 # Entry point for this specific page
 if __name__ == "__main__":

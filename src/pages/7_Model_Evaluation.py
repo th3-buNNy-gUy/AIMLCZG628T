@@ -180,9 +180,7 @@ def model_evaluation_page():
         model_list = list(st.session_state["saved_models"].keys())
         if "trained_models" in st.session_state:
             model_list = model_list + list(st.session_state["trained_models"].keys())
-
-        print("A"*1000, model_list)
-
+            
         selected_models = st.multiselect(
                                             "Please select the model(s) to evaluate ::",
                                             model_list,
