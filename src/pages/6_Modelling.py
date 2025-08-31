@@ -88,10 +88,6 @@ def plot_confusion_matrices(labels, predictions, set="Test"):
 
 
 def modelling_page():
-    """
-    Function to display the Exploratory Data Analysis page.
-    It retrieves the DataFrame from session state and performs basic EDA.
-    """
 
     st.title("Modelling")
     st.write("Perform basic modelling on the dataset.")
