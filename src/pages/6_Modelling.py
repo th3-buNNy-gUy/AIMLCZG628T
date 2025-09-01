@@ -344,7 +344,7 @@ def modelling_page():
 
                         selected_contamination = st.slider(
                             "Set Contamination:",
-                            min_value=0.01, max_value=1.00, value=0.3, step=0.01,
+                            min_value=0.01, max_value=0.50, value=0.3, step=0.01,
                             # help="Points with a Z-score (standard deviations from mean) above this threshold will be marked as anomalies."
                         )
 
@@ -453,7 +453,7 @@ def modelling_page():
                         )
 
                         now = datetime.now()
-                        filename = f"svm_classifier_{selected_solver}_{selected_C}_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
+                        filename = f"svm_classifier_{selected_kernel}_{selected_C}_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
                         is_save_download = st.button(
                                                         "Save Model", 
                                                         key=617, 
@@ -491,7 +491,7 @@ def modelling_page():
                         )
 
                         now = datetime.now()
-                        filename = f"rf_classifier_{selected_solver}_{selected_C}_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
+                        filename = f"rf_classifier_{selected_criterion}_{selected_n_estimator}_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
                         is_save_download = st.button(
                                                         "Save Model", 
                                                         key=617, 
@@ -528,7 +528,7 @@ def modelling_page():
                         )
 
                         now = datetime.now()
-                        filename = f"xgb_classifier_{selected_solver}_{selected_C}_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
+                        filename = f"xgb_classifier_{selected_n_estimator}_{now.year}_{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
                         is_save_download = st.button(
                                                         "Save Model", 
                                                         key=617, 
